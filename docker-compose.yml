@@ -15,7 +15,7 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+      
   idp:
     build:
       context: ./idp
@@ -50,5 +50,37 @@ services:
     ports:
       - "3002:3002"
 
+  music:
+    build:
+      context: ./music-service
+
+    container_name: prototype1-music
+
+    depends_on:
+      - idp
+
+    environment:
+      IDP_INTERNAL_URL: http://idp:3000
+      IDP_PUBLIC_URL: http://localhost:3000
+
+    ports:
+      - "3003:3003"
+
+  shopping:
+    build:
+      context: ./shopping-service
+
+    container_name: prototype1-shopping
+
+    depends_on:
+      - idp
+
+    environment:
+      IDP_INTERNAL_URL: http://idp:3000
+      IDP_PUBLIC_URL: http://localhost:3000
+
+    ports:
+      - "3001:3001"
+      
 volumes:
   postgres_data:

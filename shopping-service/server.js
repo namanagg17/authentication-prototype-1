@@ -12,7 +12,11 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
-const IDP_URL = process.env.IDP_URL || 'http://localhost:3000';
+const IDP_INTERNAL_URL =
+  process.env.IDP_INTERNAL_URL || 'http://localhost:3000';
+
+const IDP_PUBLIC_URL =
+  process.env.IDP_PUBLIC_URL || 'http://localhost:3000';
 
 app.use(cors({
   origin: 'http://localhost:3001',
@@ -28,9 +32,9 @@ let cachedPublicKey = null;
 async function getPublicKey() {
   if (cachedPublicKey) return cachedPublicKey;
 
-  console.log(`Fetching public key from IdP: ${IDP_URL}/public-key`);
+  console.log(`Fetching public key from IdP: ${IDP_INTERNAL_URL}/public-key`);
   try {
-    const res = await fetch(`${IDP_URL}/public-key`);
+    const res = await fetch(`${IDP_INTERNAL_URL}/public-key`);
     if (!res.ok) {
       throw new Error(`Failed to fetch public key, status: ${res.status}`);
     }
@@ -52,7 +56,7 @@ const authenticateJWT = async (req, res, next) => {
     return res.status(401).json({ 
       error: 'unauthorized', 
       message: 'Access token missing',
-      loginUrl: `${IDP_URL}/?client_id=shopping&redirect_uri=http://localhost:3001/auth/callback`
+      loginUrl: `${IDP_PUBLIC_URL}/?client_id=shopping&redirect_uri=http://localhost:3001/auth/callback`
     });
   }
 
@@ -72,7 +76,7 @@ const authenticateJWT = async (req, res, next) => {
     return res.status(401).json({ 
       error: 'invalid_token', 
       message: 'Access token invalid or expired',
-      loginUrl: `${IDP_URL}/?client_id=shopping&redirect_uri=http://localhost:3001/auth/callback`
+      loginUrl: `${IDP_PUBLIC_URL}/?client_id=shopping&redirect_uri=http://localhost:3001/auth/callback`
     });
   }
 };
@@ -88,7 +92,7 @@ app.get('/auth/callback', async (req, res) => {
   try {
     // Server-to-server request to exchange code for tokens
     console.log('Exchanging code with IdP...');
-    const tokenRes = await fetch(`${IDP_URL}/oauth/token`, {
+    const tokenRes = await fetch(`${IDP_INTERNAL_URL}/oauth/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
@@ -122,7 +126,7 @@ app.get('/auth/callback', async (req, res) => {
 app.post('/auth/logout', (req, res) => {
   res.clearCookie('shopping_token');
   res.json({
-    logoutUrl: `${IDP_URL}/logout?redirect_uri=http://localhost:3001`
+    logoutUrl: `${IDP_PUBLIC_URL}/logout?redirect_uri=http://localhost:3001`
   });
 });
 
