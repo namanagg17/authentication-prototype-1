@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+
+# RSA Keys
+keys/
+idp/keys/
+
+# Build artifacts
+dist/
