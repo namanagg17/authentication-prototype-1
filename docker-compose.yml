@@ -1,0 +1,54 @@
+services:
+
+  postgres:
+    image: postgres:16
+
+    container_name: prototype1-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  idp:
+    build:
+      context: ./idp
+
+    container_name: prototype1-idp
+
+    depends_on:
+      - postgres
+
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+    ports:
+      - "3000:3000"
+
+  prime:
+    build:
+      context: ./prime-service
+
+    container_name: prototype1-prime
+
+    depends_on:
+      - idp
+
+    environment:
+      IDP_INTERNAL_URL: http://idp:3000
+      IDP_PUBLIC_URL: http://localhost:3000
+
+    ports:
+      - "3002:3002"
+
+volumes:
+  postgres_data:
